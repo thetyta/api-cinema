@@ -1,5 +1,5 @@
 import UsuarioSessao from "../models/UsuariosSessoesModel.js"
-
+import Sessao from "../models/SessaoModel.js"
 
 const get = async(req,res) =>{
     try {
@@ -127,9 +127,67 @@ const persist = async (req,res) => {
         
 }
 
+const compra = async (req, res) => {
+    try {
+        const {
+            idSessao,
+            idUsuario,
+            codAssento,
+            valorAtual
+        } = req.body; 
+        
+        const sessao = await Sessao.findOne({ where: { id: idSessao } });
+
+        if (!sessao) {
+            return res.status(404).send({ message: 'nao achou a sessao' });
+        }
+
+        const lugares = sessao.getDataValue("lugares");
+        const aux = lugares.findIndex(l => l.assento === codAssento);
+
+        if (aux === -1) {
+            return res.status(404).send({ message: 'Lugar não encontrado' });
+        }
+
+        if (lugares[aux].vendido) {
+            return res.status(400).send({ message: 'lugar ocupado' });
+        }
+
+        lugares[aux].vendido = true;
+        lugares[aux].idUsuario = idUsuario;
+
+        // Atualiza sessao
+        await Sessao.update(
+            { lugares },
+            { where: { id: idSessao } }
+        );
+
+        // Cria o registro
+        await UsuarioSessao.create({
+            idSessao,
+            idUsuario,
+            valorAtual,
+        });
+
+
+        return res.status(201).send({
+            message: 'Compra realizada com sucesso!',
+            data: {
+                dataHora: sessao.dataHora,
+                lugar: lugares[aux]
+            }
+        });
+
+    } catch (error) {
+        return res.status(500).send({
+            message: error.message
+        });
+    }
+};
 
 export default {
     get,
+    compra,
     persist,
     update,
     destroy

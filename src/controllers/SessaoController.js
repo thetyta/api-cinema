@@ -1,3 +1,5 @@
+import Padrao from "../models/PadraoLugar.js"
+import Sala from "../models/SalasModel.js"
 import Sessao from "../models/SessaoModel.js"
 
 
@@ -44,10 +46,23 @@ const create = async (corpo) => {
             preco
         } = corpo
 
+        const aux = await Sala.findOne({
+            where: {
+                id: idSala
+            }
+        });
+
+        const padraoLugares = await Padrao.findOne({
+            where: {
+                id: aux.idPadrao
+            }
+        });
+
         const response = await Sessao.create({
             idSala,
             idFilme,
             dataInicio,
+            lugares: padraoLugares.lugares,
             dataFim,
             preco
         })
@@ -130,6 +145,7 @@ const persist = async (req,res) => {
     }
         
 }
+
 
 
 export default {

@@ -19,12 +19,10 @@ const Sessao = sequelize.define(
         },
         lugares: {
             type: DataTypes.JSONB,
-            allowNull: false
         },
         dataFim:{
             field: 'data_fim',
             type: DataTypes.DATE,
-            allowNull:false
         },
         preco:{
             type: DataTypes.FLOAT,
