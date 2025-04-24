@@ -16,6 +16,11 @@ const UsuarioSessao = sequelize.define(
             type: DataTypes.FLOAT,
             allowNull: false
         },
+        cancelado:{
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+            allowNull: false
+        }
     },
     {
         freezeTableName: true,

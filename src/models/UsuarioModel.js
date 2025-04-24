@@ -28,6 +28,7 @@ const Usuario = sequelize.define(
             type: DataTypes.BOOLEAN,
             
         }
+        
     },
     {
         freezeTableName: true,

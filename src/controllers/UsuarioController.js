@@ -1,4 +1,5 @@
 import Usuario from "../models/UsuarioModel.js"
+import UsuarioSessao from "../models/UsuariosSessoesModel.js"
 
 
 const get = async(req,res) =>{
@@ -128,6 +129,7 @@ const persist = async (req,res) => {
     }
         
 }
+
 
 
 export default {
