@@ -13,6 +13,7 @@ POSTGRES_USERNAME=postgres
 POSTGRES_PASSWORD=kk
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
+TOKEN_KEY=abubledbodogidfiogjd23@!3JH
 ```
 
 ## Rode

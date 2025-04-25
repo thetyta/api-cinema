@@ -16,7 +16,7 @@ const Usuario = sequelize.define(
         },
         email:{
             type: DataTypes.STRING(100),
-          
+            allowNull: false,
             unique: true
         },
         cpf:{
@@ -26,7 +26,10 @@ const Usuario = sequelize.define(
         },
         estudante:{
             type: DataTypes.BOOLEAN,
-            
+        },
+        passwordHash:{
+            type: DataTypes.TEXT,
+            allowNull: false
         }
         
     },

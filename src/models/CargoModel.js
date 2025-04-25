@@ -9,6 +9,10 @@ const Cargo = sequelize.define(
             primaryKey: true,
             autoIncrement: true,
         },
+        nome: {
+            type: DataTypes.STRING(120),
+            unique: true,
+        },
         descricao: {
             type: DataTypes.STRING(255),
             allowNull: false

@@ -36,10 +36,12 @@ const get = async(req,res) =>{
 const create = async (corpo) => {
     try {
         const {
+            nome,
             descricao
         } = corpo
 
         const response = await Cargo.create({
+            nome,
             descricao
         })
 
