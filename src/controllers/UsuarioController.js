@@ -2,6 +2,8 @@ import Usuario from "../models/UsuarioModel.js"
 import bcrypt, { hash } from 'bcrypt'
 import jwt from "jsonwebtoken"
 import Cargo from "../models/CargoModel.js"
+import sendMail from "../utils/email.js"
+import { Op } from "sequelize"
 
 
 const get = async(req,res) =>{
@@ -119,9 +121,99 @@ const login = async (req,res) =>{
     }
 }
 
-const getDataByToken = async (req, res) => {
-    console.log('entrou');
+const getPass = async (req, res) => {
+    try {
+        const { email } = req.body
+        console.log(email);
+        
+        if(!email){
+            return res.status(400).send({
+                message: 'Email é obrigatorio'
+            })
+        }
+
+        const user = await Usuario.findOne({
+            where: {
+                email
+            }
+        })
+        console.log(`dados usuario:${user}\n`);
+        
+        if(!user){
+            return res.status(400).send({
+                message: 'Usuário com esse email não existe'
+            })
+        }
+
+        const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiracao = new Date(Date.now());
+        expiracao.setMinutes(expiracao.getMinutes() + 30);
+
+        user.codigoRecuperacao = codigo
+        user.codigoExpires = expiracao
+        console.log(`codigo rec:${user.codigoRecuperacao}\n`);
+        console.log(`codigo exp:${user.codigoExpires}\n`);
+
+        await user.save()
+
+
+        const body = `
+        <h1>Recuperação de Senha</h1>
+        <p>Olá, ${user.nome}.</p>
+        <p>Seu código de recuperação é: <strong>${codigo}</strong></p>
+        <p>Este código expira em 30 minutos.</p>
+        `;
+        console.log(`\n body: ${body}`);
+        
+        
+        await sendMail('joao.vc2006@unochapeco.edu.br', user.nome, body, "Recuperação de Senha");
+
+        return res.status(200).send({
+            message: "Código de recuperação enviado para o e-mail."
+        });
+    } catch (error) {
+        throw new Error(error.message)
+    }
+}
+
+const resetPassword = async (req, res) => {
+    try {
+        const { email, codigoRecuperacao: codigo } = req.body;
+        const novaSenha = req.body.novaSenha;
+        const user = await Usuario.findOne({ 
+            where: {
+                email,
+                codigoRecuperacao: codigo.toString(),
+                codigoExpires: { [Op.gt]: new Date() }
+                }
+            });
     
+        if (!user) {
+            return res.status(400).send({
+                message: "Código inválido ou expirado."
+            });
+        }
+    
+        const passwordHash = await bcrypt.hash(novaSenha, 10);
+    
+        user.passwordHash = passwordHash;
+        user.codigoRecuperacao = null; 
+        user.codigoExpires = null;
+        await user.save();
+    
+        return res.status(200).send({
+            message: "Senha atualizada com sucesso."
+        });
+    
+    } catch (error) {
+        return res.status(500).send({
+            message: "Erro ao redefinir a senha.",
+            error: error.message
+        });
+    }
+ };
+
+const getDataByToken = async (req, res) => {
     try {
         const token = req.headers.authorization.split(' ')[1];
         if (!token) {
@@ -250,6 +342,8 @@ const persist = async (req,res) => {
 export default {
     get,
     login,
+    getPass,
+    resetPassword,
     getDataByToken,
     persist,
     update,

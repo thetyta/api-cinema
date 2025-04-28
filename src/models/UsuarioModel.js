@@ -30,6 +30,14 @@ const Usuario = sequelize.define(
         passwordHash:{
             type: DataTypes.TEXT,
             allowNull: false
+        },
+        codigoRecuperacao: {
+            field: 'codigo_recuperacao',
+            type: DataTypes.STRING(6),
+        },
+        codigoExpires: {
+            field: 'codigo_expires',
+            type: DataTypes.DATE
         }
         
     },

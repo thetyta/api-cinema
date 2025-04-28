@@ -24,6 +24,10 @@ const Filme = sequelize.define(
         duracao: {
             type: DataTypes.TIME,
             allowNull: false
+        },
+        imagemURL:{
+            field: 'imagem_url',
+            type: DataTypes.STRING(255)
         }
     },
     {

@@ -1,4 +1,5 @@
 import Filme from "../models/FilmesModel.js"
+import uploadFile from "../uploadFile.js"
 
 
 const get = async(req,res) =>{
@@ -55,6 +56,54 @@ const create = async (corpo) => {
         throw new Error(error.message)
     }
 }
+
+const createImgFilme = async (req, res) => {
+    try {
+        const { id } = req.body;
+
+        if (!req.files) {
+            return res.status(400).send({
+                message: 'Nenhum arquivo enviado.'
+            });
+        }
+
+        const arquivo = req.files
+
+        const filme = await Filme.findOne({ where: { id } });
+
+        if (!filme) {
+            return res.status(404).send({
+                message: 'Filme não encontrado.'
+            });
+        }
+
+        const uploadResult = await uploadFile(arquivo, {id: filme.id, tipo: 'imagem', tabela: 'filme' });
+
+        if (uploadResult.type === 'erro') {
+            return res.status(500).send({
+                message: 'Erro ao fazer upload da imagem',
+                error: uploadResult.message
+            });
+        }
+
+        filme.imagemUrl = uploadResult.message; 
+        await filme.save();
+
+        return res.status(200).send({
+            message: 'Imagem enviada com sucesso!',
+            data: uploadResult
+        });
+
+    } catch (error) {
+        return res.status(500).send({
+            message: 'Erro ao enviar imagem',
+            error: error.message
+        });
+    }
+};
+
+
+
 
 const update = async (corpo, id) => {
     try {
@@ -132,6 +181,7 @@ const persist = async (req,res) => {
 
 export default {
     get,
+    createImgFilme,
     persist,
     update,
     destroy
