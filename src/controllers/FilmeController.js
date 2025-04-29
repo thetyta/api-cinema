@@ -1,5 +1,11 @@
 import Filme from "../models/FilmesModel.js"
-import uploadFile from "../uploadFile.js"
+import uploadFile from "../utils/uploadFile.js"
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 
 const get = async(req,res) =>{
@@ -60,14 +66,25 @@ const create = async (corpo) => {
 const createImgFilme = async (req, res) => {
     try {
         const { id } = req.body;
+        if(!id) {
+            return res.status(400).send({
+                message: 'Nenhum ID fornecido'
+            })
+        }
 
-        if (!req.files) {
+        if (!req.files.arquivo) {
             return res.status(400).send({
                 message: 'Nenhum arquivo enviado.'
             });
         }
 
-        const arquivo = req.files
+        if(req.files.arquivo.mimetype != 'image/png'){
+            return res.status(400).send({
+                message: 'arquivo/tipo não suportado.'
+            });
+        }
+
+        const arquivo = req.files.arquivo
 
         const filme = await Filme.findOne({ where: { id } });
 
@@ -77,7 +94,7 @@ const createImgFilme = async (req, res) => {
             });
         }
 
-        const uploadResult = await uploadFile(arquivo, {id: filme.id, tipo: 'imagem', tabela: 'filme' });
+        const uploadResult = await uploadFile(arquivo, {tipo: 'imagem', tabela: 'filme', name: filme.nome, id: filme.id});
 
         if (uploadResult.type === 'erro') {
             return res.status(500).send({
@@ -86,7 +103,7 @@ const createImgFilme = async (req, res) => {
             });
         }
 
-        filme.imagemUrl = uploadResult.message; 
+        filme.imagemURL = uploadResult.message; 
         await filme.save();
 
         return res.status(200).send({
@@ -101,9 +118,6 @@ const createImgFilme = async (req, res) => {
         });
     }
 };
-
-
-
 
 const update = async (corpo, id) => {
     try {
@@ -123,7 +137,7 @@ const update = async (corpo, id) => {
     } catch (error) {
         throw new Error(error.message)
     }
-}
+};
 
 const destroy = async (req,res) => {
     try {
@@ -141,8 +155,21 @@ const destroy = async (req,res) => {
             return res.status(404).send('not found')
         }
 
+        if (response.imagemURL) {
+            const imagePath = path.join(response.imagemURL);
+            console.log(imagePath);
+            
+            try {
+                if (fs.existsSync(imagePath)) {
+                    fs.unlinkSync(imagePath);
+                }
+            } catch (error) {
+                throw new Error(error.message)
+            }
+        }
+        console.log(response);
         await response.destroy()
-
+        console.log(response);
         return res.status(200).send({
             message: 'registro excluido',
             data:response
