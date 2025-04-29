@@ -7,7 +7,7 @@ async function sendMail(to, name, body, subject) {
         secure: false,
         auth: {
             user: 'joao.vc2006@unochapeco.edu.br',
-            pass: 'jnfi aacl jkvj erap',
+            pass: '',
         }
     });
 
