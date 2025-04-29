@@ -6,7 +6,7 @@ async function sendMail(to, name, body, subject) {
         port: 587,
         secure: false,
         auth: {
-            user: 'joao.vc2006@unochapeco.edu.br',
+            user: '',
             pass: '',
         }
     });
